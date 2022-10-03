@@ -1,8 +1,7 @@
 package simulation
 
-const (
-	SimulationHeight = 16
-	SimulationWidth  = 16
+import (
+	"math/rand"
 )
 
 // A body represents a simple entity in the simulation with a position
@@ -36,6 +35,36 @@ func (s *Body) SetPosition(x, y int) {
 	s.y = y
 }
 
-func (s *Simulation) Tick() int64 {
+func (s *Simulation) CurrentTick() int64 {
 	return s.tick
+}
+
+// Activate a mechanism to potentially perform a side effect and change states
+func (b *Body) Activate(sim *Simulation) {
+	// Check if the condition is right
+	var validConditions []int
+	for i, c := range b.mechanism.currentState.conditions {
+		if c.Determine(sim) {
+			validConditions = append(validConditions, i)
+		}
+	}
+
+	// If any conditions are right, pick a random condition then induce a side effect
+	if len(validConditions) > 0 {
+		connection := rand.Intn(len(validConditions))
+		b.mechanism.currentState.effects[connection].Perform(sim, b)
+
+		// ...And then change state
+		b.mechanism.currentState = b.mechanism.currentState.connections[connection]
+	}
+
+}
+
+// Simulate one tick
+func (s *Simulation) Simulate() {
+	for _, b := range s.bodies {
+		b.Activate(s)
+	}
+
+	s.tick += 1
 }

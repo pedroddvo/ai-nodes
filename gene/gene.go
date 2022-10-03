@@ -1,5 +1,7 @@
 package gene
 
+import "fmt"
+
 type GeneKind int
 
 // A gene is the arrow in a mechanism state machine diagram
@@ -18,7 +20,31 @@ const (
 	South
 	East
 	West
+
+	GeneCount
 )
+
+//go:generate stringer -type=GeneKind
+
+func GeneFromKind(g GeneKind) Gene {
+	switch g {
+	// MovementGene
+	case Idle:
+		fallthrough
+	case North:
+		fallthrough
+	case South:
+		fallthrough
+	case East:
+		fallthrough
+	case West:
+		g := NewMovementGene(g)
+		return &g
+
+	default:
+		panic(fmt.Sprintf("Cannot derive gene from kind %v!", g))
+	}
+}
 
 type MovementGene struct {
 	kind GeneKind

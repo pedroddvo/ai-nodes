@@ -19,11 +19,11 @@ type State struct {
 // Mechanisms can be generated and mutated
 type Mechanism struct {
 	currentState *State
-	zeroState    State // Entry point for state machine
+	zeroState    *State // Entry point for state machine
 }
 
-func MechanismFromState(s State) Mechanism {
-	return Mechanism{zeroState: s, currentState: &s}
+func MechanismFromState(s *State) Mechanism {
+	return Mechanism{zeroState: s, currentState: s}
 }
 
 // Creates a bridge from a->b
@@ -31,9 +31,4 @@ func (a *State) Bridge(b *State, effect gene.Gene, condition gene.Condition) {
 	a.connections = append(a.connections, b)
 	a.conditions = append(a.conditions, condition)
 	a.effects = append(a.effects, effect)
-}
-
-// Activate a state to potentially perform a side effect and change states
-func (s *State) Activate(sim *Simulation) {
-
 }

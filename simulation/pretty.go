@@ -3,7 +3,13 @@ package simulation
 import (
 	"fmt"
 	"strings"
+
+	"github.com/pedroddvo/ai-nodes/gene"
 )
+
+type PrettyOpts struct {
+	World, States bool
+}
 
 func mapConnections(s *State, connectionMap map[*State]int) {
 	if _, ok := connectionMap[s]; !ok {
@@ -24,15 +30,17 @@ func prettyConnections(connectionMap map[*State]int) string {
 	buf := ""
 
 	for s, id := range connectionMap {
-		buf += fmt.Sprintf("%d:\n", id)
+		buf += fmt.Sprintf("s%d: ", id)
+		if len(s.connections) == 0 {
+			buf += "⭗" // empty state (end of state machine)
+		}
+		buf += "\n"
 		for i, con := range s.connections {
 			// Stretch the arrow to fit kind id
-			l := con.effects[i].Kind() / 10
-			buf += fmt.Sprintf("   (%d)\n", con.effects[i].Kind())
-			buf += fmt.Sprintf("  %d%s>%d:\n", id, repeat(int(l)+2, "-"), connectionMap[con])
-			buf += fmt.Sprintf("    when %s\n", con.conditions[i].Description())
-
-			buf += fmt.Sprint("\n")
+			k := fmt.Sprintf("%v", s.effects[i].Kind())
+			buf += fmt.Sprintf("|    %v\n", s.effects[i].Kind())
+			buf += fmt.Sprintf("|  s%d%s>s%d\n", id, repeat(len(k), "-"), connectionMap[con])
+			buf += fmt.Sprintf("|  => %v\n\n", s.conditions[i].ConditionKind())
 		}
 	}
 
@@ -59,7 +67,7 @@ func (self *Mechanism) Pretty() string {
 	return self.zeroState.Pretty()
 }
 
-func (self *Simulation) Pretty() string {
+func (self *Simulation) Pretty(opts PrettyOpts) string {
 	bodyIds := make(map[*Body]int)
 
 	for _, b := range self.bodies {
@@ -70,26 +78,31 @@ func (self *Simulation) Pretty() string {
 	char := byte('a')
 	clumps := make(map[byte][]*Body)
 	// map out simulation
-	for y := 0; y < SimulationHeight; y++ {
-		for x := 0; x < SimulationWidth; x++ {
-			var clump []*Body
-			for b := range bodyIds {
-				if b.x == x && b.y == y {
-					clump = append(clump, b)
+	if opts.World {
+		buf += " " + repeat(gene.SimulationWidth, "-") + "\n"
+		for y := 0; y < gene.SimulationHeight; y++ {
+			buf += "|"
+			for x := 0; x < gene.SimulationWidth; x++ {
+				var clump []*Body
+				for b := range bodyIds {
+					if b.x == x && b.y == y {
+						clump = append(clump, b)
+					}
+				}
+
+				if len(clump) > 1 {
+					buf += string(char)
+					clumps[char] = clump
+					char++
+				} else if len(clump) == 1 {
+					buf += fmt.Sprint(bodyIds[clump[0]])
+				} else {
+					buf += " "
 				}
 			}
-
-			if len(clump) > 1 {
-				buf += string(char)
-				clumps[char] = clump
-				char++
-			} else if len(clump) == 1 {
-				buf += fmt.Sprint(bodyIds[clump[0]])
-			} else {
-				buf += " "
-			}
+			buf += "|\n"
 		}
-		buf += "\n"
+		buf += " " + repeat(gene.SimulationWidth, "-")
 	}
 
 	// clumps
@@ -105,13 +118,15 @@ func (self *Simulation) Pretty() string {
 
 	buf += "\n\n"
 
-	// pretty print states
-	buf += "--- STATE INFO ---\n"
-	for b, i := range bodyIds {
-		buf += fmt.Sprint(i) + "::\n"
-		buf += indent(1, b.mechanism.zeroState.Pretty())
+	if opts.States {
+		// pretty print states
+		buf += "-------- INDEX -------\n"
+		for b, i := range bodyIds {
+			buf += fmt.Sprint(i) + ":\n"
+			buf += indent(1, b.mechanism.zeroState.Pretty())
 
-		buf += "\n"
+			buf += "\n"
+		}
 	}
 	return buf
 }

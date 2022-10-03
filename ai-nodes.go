@@ -2,22 +2,28 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 
-	"github.com/pedroddvo/ai-nodes/gene"
 	"github.com/pedroddvo/ai-nodes/simulation"
 )
 
 func main() {
-	a, b := simulation.State{}, simulation.State{}
+	rand.Seed(time.Now().Unix())
+	var bodies []*simulation.Body
 
-	g := gene.NewMovementGene(gene.East)
+	for i := 0; i < 10; i++ {
+		ma := simulation.GenerateMechanism(5)
+		ba := simulation.NewBody(ma, 5, 5)
+		bodies = append(bodies, &ba)
+	}
 
-	a.Bridge(&b, &g, &gene.DummyCondition{})
-	b.Bridge(&a, &g, &gene.DummyCondition{})
+	s := simulation.NewSimulation(bodies)
 
-	ba, bb := simulation.NewBody(simulation.MechanismFromState(a), 4, 4), simulation.NewBody(simulation.MechanismFromState(a), 4, 4)
-
-	s := simulation.NewSimulation([]*simulation.Body{&ba, &bb})
-
-	fmt.Println(s.Pretty())
+	fmt.Println(s.Pretty(simulation.PrettyOpts{World: true, States: true}))
+	for {
+		fmt.Scanln()
+		s.Simulate()
+		fmt.Println(s.Pretty(simulation.PrettyOpts{World: true}))
+	}
 }

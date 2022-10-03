@@ -1,5 +1,10 @@
 package gene
 
+const (
+	SimulationHeight = 16
+	SimulationWidth  = 16
+)
+
 type Body interface {
 	Position() (int, int)
 	SetPosition(x, y int)
@@ -9,5 +14,5 @@ type Body interface {
 // As genes will be performing side effects, they must perform it inside a boxed simulation
 type Simulation interface {
 	// Current simulation tick
-	Tick() int64
+	CurrentTick() int64
 }
