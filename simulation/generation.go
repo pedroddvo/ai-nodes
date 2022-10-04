@@ -6,11 +6,11 @@ import (
 	"github.com/pedroddvo/ai-nodes/gene"
 )
 
-func generateGene() gene.Gene {
+func GenerateGene() gene.Gene {
 	return gene.GeneFromKind(gene.GeneKind(rand.Intn(int(gene.GeneCount))))
 }
 
-func generateCondition() gene.Condition {
+func GenerateCondition() gene.Condition {
 	return gene.ConditionFromKind(gene.ConditionKind(rand.Intn(int(gene.ConditionCount))))
 }
 
@@ -32,8 +32,8 @@ func GenerateMechanism(maxDepth int) Mechanism {
 	for _, s := range states {
 		for i := 0; i < len(s.connections); i++ {
 			s.connections[i] = states[rand.Intn(depth)]
-			s.conditions[i] = generateCondition()
-			s.effects[i] = generateGene()
+			s.conditions[i] = GenerateCondition()
+			s.effects[i] = GenerateGene()
 		}
 	}
 

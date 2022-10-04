@@ -56,10 +56,33 @@ func NewMovementGene(g GeneKind) MovementGene {
 
 func (g *MovementGene) Kind() GeneKind { return g.kind }
 
+func Abs(n int) int {
+	if n < 0 {
+		return -n
+	}
+	return n
+}
+
+func Max(a int, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func Min(a int, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func (g *MovementGene) Perform(s Simulation, n Body) {
 	offsetNode := func(x int, y int) {
 		x2, y2 := n.Position()
-		n.SetPosition(x2+x, y2+y)
+		xo, yo := Max(0, Min(x2+x, SimulationWidth-1)), Max(0, Min(y2+y, SimulationHeight-1))
+
+		n.SetPosition(xo, yo)
 	}
 
 	switch g.kind {

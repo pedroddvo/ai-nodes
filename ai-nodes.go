@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/pedroddvo/ai-nodes/gene"
 	"github.com/pedroddvo/ai-nodes/simulation"
 )
 
@@ -12,9 +13,9 @@ func main() {
 	rand.Seed(time.Now().Unix())
 	var bodies []*simulation.Body
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 8; i++ {
 		ma := simulation.GenerateMechanism(5)
-		ba := simulation.NewBody(ma, 5, 5)
+		ba := simulation.NewBody(ma, rand.Intn(gene.SimulationWidth), rand.Intn(gene.SimulationHeight))
 		bodies = append(bodies, &ba)
 	}
 
@@ -22,8 +23,14 @@ func main() {
 
 	fmt.Println(s.Pretty(simulation.PrettyOpts{World: true, States: true}))
 	for {
-		fmt.Scanln()
-		s.Simulate()
-		fmt.Println(s.Pretty(simulation.PrettyOpts{World: true}))
+		var input string
+		fmt.Scanln(&input)
+		if input == "s" {
+			fmt.Println(s.Pretty(simulation.PrettyOpts{States: true}))
+			continue
+		} else {
+			s.Simulate()
+			fmt.Println(s.Pretty(simulation.PrettyOpts{World: true}))
+		}
 	}
 }
